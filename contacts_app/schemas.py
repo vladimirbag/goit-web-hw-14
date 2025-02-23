@@ -1,24 +1,22 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, Annotated
-from pydantic.types import constr
-from datetime import date
 from typing import Optional
+from datetime import date
 
 # Схема для створення контакту
 class ContactCreate(BaseModel):
-    first_name: Annotated[str, constr(min_length=1, max_length=50)]
-last_name: Annotated[str, constr(min_length=1, max_length=50)]
-email: EmailStr
-phone_number: Annotated[str, constr(min_length=10, max_length=15, regex="^\+?[0-9]+$")]
-birthday: date
-additional_info: Optional[str] = None
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone_number: str
+    birthday: date
+    additional_info: Optional[str] = None
 
-# Схема для оновлення контакту (дозволяє часткове оновлення)
+# Схема для оновлення контакту
 class ContactUpdate(BaseModel):
-    first_name: Optional[Annotated[str, constr(min_length=1, max_length=50)]] = None
-    last_name: Optional[Annotated[str, constr(min_length=1, max_length=50)]] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: Optional[EmailStr] = None
-    phone_number: Optional[Annotated[str, constr(min_length=10, max_length=15, regex="^\+?[0-9]+$")]] = None
+    phone_number: Optional[str] = None
     birthday: Optional[date] = None
     additional_info: Optional[str] = None
 
@@ -29,10 +27,10 @@ class ContactResponse(ContactCreate):
     class Config:
         from_attributes = True
 
-# Схеми для користувача (аутентифікація)
+# Схеми для користувачів (аутентифікація)
 class UserCreate(BaseModel):
     email: EmailStr
-    password: Annotated[str, constr(min_length=8, max_length=100)]
+    password: str  # Видалено constr(), щоб уникнути помилки
 
 class UserResponse(BaseModel):
     id: int
@@ -41,6 +39,7 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Схеми для токенів
 class Token(BaseModel):
     access_token: str
     refresh_token: str
