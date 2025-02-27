@@ -2,9 +2,11 @@ from datetime import timedelta, datetime
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from cloudinary.uploader import upload
+
 from contacts_app.database import get_db
 from contacts_app.models import User
 from contacts_app.schemas import UserCreate, UserResponse, Token
@@ -106,3 +108,19 @@ async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
 
     new_access_token = create_jwt_token({"sub": user.email}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": new_access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+# Оновлення аватара користувача
+@auth_router.post("/upload-avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        result = upload(file.file)
+        current_user.avatar_url = result["secure_url"]
+        await db.commit()
+        await db.refresh(current_user)
+        return {"avatar_url": current_user.avatar_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Avatar upload failed: {str(e)}")

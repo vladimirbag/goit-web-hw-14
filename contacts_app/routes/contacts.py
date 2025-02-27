@@ -9,10 +9,12 @@ from contacts_app.models import Contact, User
 from contacts_app.schemas import ContactCreate, ContactUpdate, ContactResponse
 from contacts_app.auth import get_current_user
 
+from fastapi_limiter.depends import RateLimiter
+
 contacts_router = APIRouter()
 
 # Створення контакту (тільки для авторизованого користувача)
-@contacts_router.post("/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED)
+@contacts_router.post("/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def create_contact(
     contact_data: ContactCreate,
     db: AsyncSession = Depends(get_db),

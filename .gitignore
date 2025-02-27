@@ -1,2 +1,7 @@
-echo __pycache__/ >> .gitignore
-echo .env >> .gitignore
+# Ігнорувати файл .env
+.env
+
+# Ігнорувати кеш
+__pycache__/
+*.pyc
+*.pyo
